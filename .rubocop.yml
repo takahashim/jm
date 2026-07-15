@@ -1,0 +1,50 @@
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - "vendor/**/*"
+    - "tmp/**/*"
+
+# The codebase uses double-quoted strings consistently.
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+# Documentation is tracked in SPEC.md, not per-class comments.
+Style/Documentation:
+  Enabled: false
+
+# SQL-heavy and command methods run a little long; keep limits pragmatic.
+Metrics/MethodLength:
+  Max: 30
+
+Metrics/AbcSize:
+  Max: 30
+
+Metrics/CyclomaticComplexity:
+  Max: 8
+
+# Keyword arguments read clearly even past the positional-arg limit.
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
+# Unannotated %s tokens are fine for short, local format strings.
+Style/FormatStringToken:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 100
+
+# Store classes hold all SQL for an aggregate and run long by design; test
+# files are naturally long too.
+Metrics/ClassLength:
+  Max: 160
+  Exclude:
+    - "test/**/*"
+
+Naming/VariableNumber:
+  Exclude:
+    - "test/**/*"
