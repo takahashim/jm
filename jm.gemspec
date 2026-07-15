@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
 
   spec.files = Dir.glob("{bin,lib}/**/*", File::FNM_DOTMATCH).reject do |path|
     File.directory?(path)
-  end + %w[LICENSE README.md]
+  end + %w[LICENSE README.md AGENTS.md]
   spec.bindir = "bin"
   spec.executables = ["jm"]
 

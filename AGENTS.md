@@ -3,6 +3,10 @@
 `jm` は人間と coding agent の両方が書き込む前提で設計されている。agent は SQLite を
 直接触らず、`jm` コマンドと `--json` 出力だけを使うこと。
 
+このガイドはツールに同梱されており、どのエージェント・どのプロジェクトからでも
+`jm guide` で最新版を表示できる。作業を始める前にまず `jm guide` を読むこと。
+まだ DB が無ければ `jm init` で初期化する(初回のみ)。
+
 ## 原則
 
 - **SQLite を直接操作しない。** すべて `jm` CLI 経由。DB スキーマは非公開の内部実装。
@@ -62,3 +66,28 @@ jm edit JM-42 --stdin < new_body.md
 
 `0` 成功 / `1` 一般 / `2` 引数 / `3` 対象なし / `4` 整合性違反 / `5` DB / `6` Git。
 `jm next` は着手可能な Item が無いとき `3` を返す。
+
+## jm 自体が不調なとき(改善につなげる)
+
+`jm` のコマンドがエラーになる・仕様と挙動がずれる・使いにくいと感じたら、黙って回避
+せずに記録する。`jm` の source は `jm` 自身に repo として登録されている。
+
+```bash
+jm repo show jm --json        # source のローカルパスを得る(path フィールド)
+```
+
+1. **記録する** — 再現コマンドと期待/実際を要点だけ Item に残す。
+   ```bash
+   jm add "jm doctor が WAL で誤検知する" --type bug --repo jm \
+     --message "再現: jm doctor / 期待: OK / 実際: FTS mismatch を誤報"
+   ```
+   長いログは貼らず、ファイルに保存して `jm ref add ... log` で参照する(Entry は要点のみ)。
+2. **直す(可能なら)** — repo の path へ移動し、通常の開発フローで修正する。
+   ```bash
+   cd "$(jm repo show jm --json | ruby -rjson -e 'puts JSON.parse(STDIN.read)["path"]')"
+   # 修正 → 検証(必ず緑を確認してからコミット)
+   bundle exec rake test && bundle exec rubocop
+   ```
+   関連コミットを Item に紐付ける: `jm ref add <ID> commit HEAD --repo jm`。
+3. 挙動と仕様が食い違う場合は、実装だけでなく `SPEC.md` / `PLAN.md` / このガイドの
+   どれを正とすべきかも Item の本文で述べる。
