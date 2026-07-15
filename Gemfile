@@ -2,8 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "sqlite3", "~> 2.9"
-gem "tomlrb", "~> 2.0"
+gemspec
 
 group :development, :test do
   gem "minitest", "~> 5.0"

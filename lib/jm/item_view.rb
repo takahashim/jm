@@ -32,13 +32,16 @@ module JM
       }
     end
 
-    # Compact one-line summary for `jm list`.
-    def summary_line
-      format(
+    # Compact one-line summary for `jm list`. Repository names, when given, are
+    # appended as `[name, ...]` so cross-project items are visible in a listing.
+    def summary_line(repos: [])
+      line = format(
         "%-9s %-7s %-12s %4s  %s",
         public_id, @row["state"], @row["type"],
         "p#{@row["priority"]}", @row["title"]
       )
+      line += "  [#{repos.join(", ")}]" unless repos.empty?
+      line
     end
 
     # Multi-line detail for `jm show`.

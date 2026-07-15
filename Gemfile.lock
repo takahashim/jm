@@ -1,3 +1,10 @@
+PATH
+  remote: .
+  specs:
+    jm (0.0.1)
+      sqlite3 (~> 2.9)
+      tomlrb (~> 2.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -58,14 +65,14 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  jm!
   minitest (~> 5.0)
   rake (~> 13.0)
   rubocop
-  sqlite3 (~> 2.9)
-  tomlrb (~> 2.0)
 
 CHECKSUMS
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
+  jm (0.0.1)
   json (2.21.1) sha256=13a43df75d95641443f5702dff350f237164a9d811ff0f2c2800d4d980220583
   language_server-protocol (3.17.0.6) sha256=5ef2c0c138f8267e1bc631d3328347d354f96724b0af22f2c79516120443b7f0
   lint_roller (1.1.0) sha256=2c0c845b632a7d172cb849cc90c1bce937a28c5c8ccccb50dfd46a485003cc87

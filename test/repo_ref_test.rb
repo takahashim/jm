@@ -60,6 +60,31 @@ class RepoRefTest < JM::TestCase
     assert_equal ["myrepo"], json_of("show", "1")["repositories"]
   end
 
+  def test_add_with_repo_links_on_create
+    run_cli("repo", "add", "myrepo", @repo)
+    doc = json_of("add", "linked item", "--repo", "myrepo")
+    assert_equal ["myrepo"], json_of("show", doc["id"].to_s)["repositories"]
+  end
+
+  def test_list_shows_linked_repo_names
+    run_cli("repo", "add", "myrepo", @repo)
+    run_cli("add", "linked", "--repo", "myrepo")
+    _code, out, = run_cli("list")
+    linked = out.lines.find { |l| l.include?("linked") }
+    assert_match(/\[myrepo\]/, linked)
+    # The setup item has no repo, so no bracket is appended.
+    plain = out.lines.find { |l| l.include?(" item") }
+    refute_match(/\[/, plain)
+  end
+
+  def test_add_with_unknown_repo_creates_no_item
+    code, _out, err = run_cli("add", "orphan?", "--repo", "nope")
+    assert_equal 3, code
+    assert_match(/no such repository/, err)
+    titles = json_of("list")["items"].map { |i| i["title"] }
+    refute_includes titles, "orphan?"
+  end
+
   def test_repo_remove_keeps_items
     run_cli("repo", "add", "myrepo", @repo)
     run_cli("repo", "link", "1", "myrepo")

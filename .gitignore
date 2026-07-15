@@ -1,6 +1,7 @@
 /tmp/
 /vendor/bundle/
 /.bundle/
+*.gem
 *.sqlite3
 *.sqlite3-wal
 *.sqlite3-shm

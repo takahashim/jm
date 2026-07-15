@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module JM
-  VERSION = "0.0.1"
+require "jm/version"
 
+module JM
   # Version of the --json output contract exposed to coding agents (SPEC 16, 22).
   # Bump only on a breaking change to the JSON shape.
   JSON_SCHEMA_VERSION = 1

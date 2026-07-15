@@ -16,10 +16,14 @@ module JM
         raise ArgError, "too many arguments" unless rest.empty?
 
         title, body = resolve_title_and_body(title, opts)
+        # Resolve the repo before creating the item so an unknown name fails
+        # without leaving an orphan item behind (SPEC 14.2).
+        repo = repos.get_by_name(opts[:repo]) if opts[:repo]
         row = items.create(
           type: opts[:type], title: title, body: body,
           state: opts[:state], priority: opts[:priority], author: author(opts[:by])
         )
+        repos.link(row["id"], repo["id"]) if repo
 
         emit(row)
       end
@@ -36,6 +40,7 @@ module JM
           o.on("--type TYPE") { |v| opts[:type] = Parse.type(v) }
           o.on("--state STATE") { |v| opts[:state] = Parse.state(v) }
           o.on("--priority P") { |v| opts[:priority] = Parse.priority(v) }
+          o.on("--repo NAME") { |v| opts[:repo] = v }
           o.on("--message MSG") { |v| opts[:message] = v }
           o.on("--stdin") { opts[:stdin] = true }
           o.on("--by NAME") { |v| opts[:by] = v }

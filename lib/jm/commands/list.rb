@@ -54,7 +54,10 @@ module JM
         elsif rows.empty?
           @output.line("(no items)")
         else
-          rows.each { |r| @output.line(ItemView.new(r).summary_line) }
+          rows.each do |r|
+            names = repos.for_item(r["id"]).map { |x| x["name"] }
+            @output.line(ItemView.new(r).summary_line(repos: names))
+          end
         end
       end
     end

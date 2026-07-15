@@ -23,23 +23,19 @@
 
 Ruby 3.2 以降と `git` が必要。
 
+開発版を使う場合は、リポジトリを clone して Bundler 経由で実行する。
+
 ```bash
 git clone <this-repo> ~/src/jm
 cd ~/src/jm
 bundle install
+bundle exec jm init
 ```
 
-`bin/jm` に PATH を通すか、シェルにエイリアスを設定する。
+RubyGems への公開後は `gem install jm` でインストールできる。
 
 ```bash
-ln -s ~/src/jm/bin/jm ~/.local/bin/jm
-# または
-alias jm="ruby -I$HOME/src/jm/lib $HOME/src/jm/bin/jm"
-```
-
-初期化:
-
-```bash
+gem install jm
 jm init
 ```
 
