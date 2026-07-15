@@ -50,6 +50,10 @@ module JM
       end
     end
 
+    class Inbox < StateChange
+      self.target_state = "inbox"
+    end
+
     class Open < StateChange
       self.target_state = "open"
     end

@@ -32,6 +32,7 @@ module JM
       "show" => Commands::Show,
       "list" => Commands::List,
       "edit" => Commands::Edit,
+      "inbox" => Commands::Inbox,
       "open" => Commands::Open,
       "start" => Commands::Start,
       "block" => Commands::Block,

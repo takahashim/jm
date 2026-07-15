@@ -84,7 +84,7 @@ jm done 1 --resolution accepted
 | `jm show ID [--all]` | Item 詳細(tag/repo/relation/reference/entry)。`--all` で全 Entry |
 | `jm list [フィルタ]` | 一覧。既定は inbox/open/active/blocked |
 | `jm edit ID [--title T] [--type T] [--completed-at D \| --started-at D \| --archived-at D] [--message M \| --stdin]` | 編集。無指定で本文をエディタ。`--*-at` は打刻済みタイムスタンプの訂正(上書き) |
-| `jm open/start/block/done/archive ID` | 状態遷移 |
+| `jm inbox/open/start/block/done/archive ID` | 状態遷移(`inbox` は open 等から未整理へ戻す) |
 | `jm priority ID <値\|別名>` | 優先度(別名: lowest/low/normal/high/highest) |
 | `jm delete ID [--force]` | 物理削除(確認あり) |
 

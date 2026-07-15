@@ -206,6 +206,14 @@ class ItemLifecycleTest < JM::TestCase
     refute_match(/JM-000002/, out)
   end
 
+  def test_inbox_moves_item_back_to_inbox
+    run_cli("add", "task")
+    run_cli("open", "1")
+    assert_equal "open", json_of("show", "1")["state"]
+    run_cli("inbox", "1")
+    assert_equal "inbox", json_of("show", "1")["state"]
+  end
+
   def test_list_all_shows_done_and_archived
     run_cli("add", "a")
     run_cli("add", "b")

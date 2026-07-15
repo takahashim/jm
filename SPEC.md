@@ -906,12 +906,15 @@ jm list --sort id
 ## 14.6 状態変更
 
 ```bash
+jm inbox JM-42
 jm open JM-42
 jm start JM-42
 jm block JM-42
 jm done JM-42
 jm archive JM-42
 ```
+
+`inbox`はstateを`open`などから`inbox`へ戻す（再仕分け用）。タイムスタンプは打刻しない。
 
 `start`はstateを`active`にし、未設定ならstarted_atを記録する。
 
