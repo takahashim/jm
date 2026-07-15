@@ -25,11 +25,13 @@ module JM
         emit(rows)
       end
 
+      # rubocop:disable Metrics/AbcSize -- a flat list of option definitions
       def parse(args, opts)
         parse_options(args) do |o|
           o.on("--state STATE") { |v| opts[:state] = Parse.state(v) }
           o.on("--type TYPE") { |v| opts[:type] = Parse.type(v) }
           o.on("--archived") { opts[:archived] = true }
+          o.on("--all") { opts[:all] = true }
           o.on("--ready") { opts[:ready] = true }
           o.on("--tag TAG") { |v| opts[:tag] = v }
           o.on("--repo NAME") { |v| opts[:repo] = v }
@@ -38,11 +40,13 @@ module JM
           o.on("--priority-min N") { |v| opts[:priority_min] = Parse.priority(v) }
         end
       end
+      # rubocop:enable Metrics/AbcSize
 
-      # Explicit --state wins; --archived shows archived; otherwise the default
-      # working set (SPEC 14.5).
+      # Explicit --state wins; --all shows every state (including done/archived);
+      # --archived shows archived; otherwise the default working set (SPEC 14.5).
       def resolve_states(opts)
         return [opts[:state]] if opts[:state]
+        return nil if opts[:all] # nil => no state filter in the store
         return ["archived"] if opts[:archived]
 
         DEFAULT_LIST_STATES

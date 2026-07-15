@@ -206,6 +206,18 @@ class ItemLifecycleTest < JM::TestCase
     refute_match(/JM-000002/, out)
   end
 
+  def test_list_all_shows_done_and_archived
+    run_cli("add", "a")
+    run_cli("add", "b")
+    run_cli("done", "2")
+    run_cli("add", "c")
+    run_cli("archive", "3")
+    _code, out, = run_cli("list", "--all")
+    assert_match(/JM-000001/, out) # inbox
+    assert_match(/JM-000002/, out) # done
+    assert_match(/JM-000003/, out) # archived
+  end
+
   def test_list_orders_by_state_rank_then_priority
     run_cli("add", "low-open")
     run_cli("open", "1")

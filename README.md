@@ -89,7 +89,7 @@ jm done 1 --resolution accepted
 | `jm delete ID [--force]` | 物理削除(確認あり) |
 
 `jm list` のフィルタ: `--state`, `--type`, `--tag`, `--repo`, `--ready`, `--archived`,
-`--by NAME`, `--since 1d`, `--priority-min N`。複数条件は AND。
+`--all`(done/archived を含む全状態), `--by NAME`, `--since 1d`, `--priority-min N`。複数条件は AND。
 
 状態遷移のオプション: `done`/`archive` は `--resolution`、`block` は `--reason`(Entry 化)。
 `start`/`done`/`archive` は `--at`(打刻日時のバックデート。`2026` / `2026-01` / `2026-01-20` /

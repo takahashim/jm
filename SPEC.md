@@ -857,9 +857,12 @@ jm list --tag event-loop
 jm list --ready
 jm list --priority-min 10
 jm list --archived
+jm list --all
 jm list --by claude
 jm list --since 1d
 ```
+
+`--archived`は`archived`のみを表示する。`--all`は状態で絞り込まず、`done`・`archived`を含む全状態を表示する。優先順位は`--state`（単一状態指定）＞`--all`＞`--archived`＞既定の作業対象集合とする。
 
 `--by`は作成者（5.6）で、`--since`は更新日時で絞り込む。組み合わせることで「エージェントが今日触ったItem」のようなレビュー用途に使える。
 
