@@ -20,6 +20,7 @@ require "jm/commands/backup"
 require "jm/commands/delete"
 require "jm/commands/history"
 require "jm/commands/guide"
+require "jm/commands/git_scan"
 
 module JM
   # Parses global options, builds the shared Output/Config, dispatches to a
@@ -52,7 +53,8 @@ module JM
       "backup" => Commands::Backup,
       "delete" => Commands::Delete,
       "history" => Commands::History,
-      "guide" => Commands::Guide
+      "guide" => Commands::Guide,
+      "git" => Commands::GitScan
     }.freeze
 
     def self.run(argv, env: ENV, stdout: $stdout, stderr: $stderr, stdin: $stdin)

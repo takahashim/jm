@@ -34,6 +34,10 @@ module JM
       end
 
       # Fetch by internal integer id; raises NotFound.
+      def exists?(id)
+        !@db.get_first_value("SELECT 1 FROM items WHERE id = ?", [id]).nil?
+      end
+
       def get(id)
         row = @db.get_first_row("SELECT * FROM items WHERE id = ?", [id])
         raise NotFound, "no such item: #{PublicId.format(id)}" if row.nil?

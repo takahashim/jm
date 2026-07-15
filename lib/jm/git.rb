@@ -40,6 +40,22 @@ module JM
       out.strip
     end
 
+    # Recent commits as [{ sha:, message: }], newest first, bounded by `limit`
+    # (SPEC 24.2). NUL separates the full SHA from the raw body; RS (\x1e)
+    # separates commits, so multi-line messages survive intact.
+    def log(dir, limit:)
+      out, ok = run(dir, "log", "--no-color", "--format=format:%H%x00%B%x1e", "-n", limit.to_s)
+      raise GitError, "cannot read git log in #{dir}" unless ok
+
+      out.split("\x1e").filter_map do |record|
+        stripped = record.strip
+        next if stripped.empty?
+
+        sha, message = stripped.split("\x00", 2)
+        { sha: sha, message: message.to_s }
+      end
+    end
+
     # Make an absolute path relative to `base` (a repo top level), for
     # move-resilient file refs (SPEC 10.3). Both sides are canonicalized so
     # symlinked roots (e.g. macOS /var -> /private/var) still match. Returns the

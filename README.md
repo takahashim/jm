@@ -105,6 +105,7 @@ jm done 1 --resolution accepted
 | `jm tag add/remove ID NAME...` / `jm tag list` | タグ |
 | `jm ref add ID KIND VALUE [--repo NAME]` / `jm ref list ID` / `jm ref remove ID REF_ID` | 参照(commit は完全 SHA へ解決、file はリポジトリ相対で保存) |
 | `jm history ID [--show REV_ID]` | title/body の変更履歴 |
+| `jm git scan --repo NAME [--limit N]` | コミットメッセージ中の `JM-42` を検出し commit Reference を自動付与(冪等) |
 
 ### Repository
 

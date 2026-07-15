@@ -22,6 +22,11 @@ module JM
         find(item_id, kind, value, repository_id)
       end
 
+      # Whether a matching reference already exists (for scan idempotency).
+      def exists?(item_id:, kind:, value:, repository_id: nil)
+        !find(item_id, kind, value, repository_id).nil?
+      end
+
       def list(item_id)
         @db.execute(
           "SELECT * FROM item_references WHERE item_id = ? ORDER BY id",
