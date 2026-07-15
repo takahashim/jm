@@ -829,6 +829,14 @@ jm priority JM-42 high
 cat body.md | jm edit JM-42 --stdin
 ```
 
+タイムスタンプの訂正もフラグで行う。`--started-at` / `--completed-at` / `--archived-at`は、`--at`(14.6.1)と同じ日時形式を受け付け、`done`/`start`/`archive`の`--at`が「未設定のときだけ打刻」する冪等な挙動なのに対し、**既存値を上書きする**。stateは変更しない。誤った打刻の訂正や、後から正確な日時が判明したときに使う。
+
+```bash
+jm edit JM-42 --completed-at 2026-07-15
+```
+
+タイムスタンプ変更はRevision化しない（Revisionはtitle/bodyのみ、17章）。
+
 ---
 
 ## 14.5 一覧

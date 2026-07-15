@@ -6,6 +6,12 @@ module JM
     # --title/--type change metadata; --stdin/--message replace the body.
     # Title/body changes are snapshotted as revisions by the store (SPEC 17).
     class Edit < Command
+      # Option key => item column for the scalar (non-body) fields edit can set.
+      SCALAR_FIELDS = {
+        title: "title", type: "type",
+        completed_at: "completed_at", started_at: "started_at", archived_at: "archived_at"
+      }.freeze
+
       private
 
       def perform(args)
@@ -26,6 +32,11 @@ module JM
         parse_options(args) do |o|
           o.on("--title TITLE") { |v| opts[:title] = v }
           o.on("--type TYPE") { |v| opts[:type] = Parse.type(v) }
+          # Correct a stored timestamp (SPEC 14.4). Unlike `done --at`, this
+          # overwrites an existing value; state is left unchanged.
+          o.on("--completed-at WHEN") { |v| opts[:completed_at] = Parse.at(v) }
+          o.on("--started-at WHEN") { |v| opts[:started_at] = Parse.at(v) }
+          o.on("--archived-at WHEN") { |v| opts[:archived_at] = Parse.at(v) }
           o.on("--message MSG") { |v| opts[:message] = v }
           o.on("--stdin") { opts[:stdin] = true }
         end
@@ -33,8 +44,7 @@ module JM
 
       def build_fields(opts, current)
         fields = {}
-        fields["title"] = opts[:title] unless opts[:title].nil?
-        fields["type"] = opts[:type] unless opts[:type].nil?
+        SCALAR_FIELDS.each { |opt, col| fields[col] = opts[opt] unless opts[opt].nil? }
 
         body_source = !opts[:message].nil? || opts[:stdin]
         anything = !fields.empty? || body_source

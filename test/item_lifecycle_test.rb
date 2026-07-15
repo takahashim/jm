@@ -160,6 +160,34 @@ class ItemLifecycleTest < JM::TestCase
     assert_equal 0, count
   end
 
+  def test_edit_completed_at_overwrites_existing_stamp
+    run_cli("add", "task")
+    run_cli("done", "1", "--at", "2026-07")
+    assert_equal "2026-07-01T00:00:00Z", json_of("show", "1")["completed_at"]
+
+    run_cli("edit", "1", "--completed-at", "2026-07-15")
+    fixed = json_of("show", "1")
+    assert_equal "2026-07-15T00:00:00Z", fixed["completed_at"]
+    assert_equal "done", fixed["state"] # state unchanged by the correction
+  end
+
+  def test_edit_completed_at_rejects_invalid_value
+    run_cli("add", "task")
+    code, _out, err = run_cli("edit", "1", "--completed-at", "whenever")
+    assert_equal 2, code
+    assert_match(/invalid --at/, err)
+  end
+
+  def test_edit_timestamp_only_does_not_snapshot_revision
+    run_cli("add", "task")
+    run_cli("done", "1", "--at", "2026-07")
+    run_cli("edit", "1", "--completed-at", "2026-07-15")
+    db = JM::Database.open(@db_path)
+    count = db.db.get_first_value("SELECT COUNT(*) FROM item_revisions")
+    db.close
+    assert_equal 0, count # only title/body are revisioned (SPEC 17)
+  end
+
   def test_block_reason_adds_entry
     run_cli("add", "task")
     run_cli("block", "1", "--reason", "waiting")
