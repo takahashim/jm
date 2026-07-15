@@ -12,6 +12,11 @@ module JM
         started_at completed_at archived_at
       ].freeze
 
+      # State that stamps a timestamp column on entry (SPEC 14.6).
+      STATE_TIMESTAMP = {
+        "active" => "started_at", "done" => "completed_at", "archived" => "archived_at"
+      }.freeze
+
       def initialize(database)
         @database = database
         @db = database.db
@@ -51,14 +56,14 @@ module JM
 
       # Move to a state, recording the associated timestamp on first entry and
       # leaving it unchanged on repeat (idempotent, SPEC 14.1.2 / 14.6).
-      def set_state(id, state, resolution: nil)
+      # `at` backdates the timestamp this transition stamps (SPEC 14.6); it only
+      # applies when the field is still unset, preserving idempotency.
+      def set_state(id, state, resolution: nil, at: nil)
         current = get(id)
         fields = { "state" => state }
         fields["resolution"] = resolution unless resolution.nil?
-        case state
-        when "active" then fields["started_at"] = current["started_at"] || Clock.now
-        when "done" then fields["completed_at"] = current["completed_at"] || Clock.now
-        when "archived" then fields["archived_at"] = current["archived_at"] || Clock.now
+        if (col = STATE_TIMESTAMP[state])
+          fields[col] = current[col] || at || Clock.now
         end
         update(id, fields)
       end

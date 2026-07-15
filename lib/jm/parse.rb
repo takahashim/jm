@@ -44,5 +44,22 @@ module JM
     rescue ArgumentError
       raise ArgError, "invalid --since: #{value} (e.g. 1d, 2h, 30m, or a date)"
     end
+
+    # A backdated timestamp for --at (SPEC 14.6). Coarse dates are padded to the
+    # earliest instant so an unknown day/time still yields a valid, sortable
+    # storage stamp: 2026 -> 2026-01-01T00:00:00Z, 2026-01 -> ...-01T00:00:00Z.
+    def at(value)
+      str = value.to_s.strip
+      normalized =
+        if (m = str.match(/\A(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?\z/))
+          format("%s-%s-%sT00:00:00Z", m[1], m[2] || "01", m[3] || "01")
+        else
+          str
+        end
+      Time.iso8601(normalized).utc.strftime(Clock::FORMAT)
+    rescue ArgumentError
+      raise ArgError, "invalid --at: #{value} " \
+                      "(e.g. 2026, 2026-01, 2026-01-20, or a full ISO 8601 timestamp)"
+    end
   end
 end

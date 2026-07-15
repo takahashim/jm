@@ -92,6 +92,8 @@ jm done 1 --resolution accepted
 `--by NAME`, `--since 1d`, `--priority-min N`。複数条件は AND。
 
 状態遷移のオプション: `done`/`archive` は `--resolution`、`block` は `--reason`(Entry 化)。
+`start`/`done`/`archive` は `--at`(打刻日時のバックデート。`2026` / `2026-01` / `2026-01-20` /
+完全 ISO8601 を受け、欠けた桁は最も早い時刻へ丸める。既に打刻済みなら上書きしない)。
 
 ### 関連付け・履歴
 

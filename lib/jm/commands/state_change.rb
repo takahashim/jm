@@ -7,7 +7,7 @@ module JM
     # state and which options apply.
     class StateChange < Command
       class << self
-        attr_accessor :target_state, :accepts_resolution, :accepts_reason
+        attr_accessor :target_state, :accepts_resolution, :accepts_reason, :accepts_at
       end
 
       private
@@ -19,7 +19,9 @@ module JM
         raise ArgError, "too many arguments" unless rest.empty?
 
         items.get(id) # existence check with a clear error before mutating
-        row = items.set_state(id, self.class.target_state, resolution: opts[:resolution])
+        row = items.set_state(
+          id, self.class.target_state, resolution: opts[:resolution], at: opts[:at]
+        )
         add_reason_entry(id, opts) if opts[:reason]
         emit(row)
       end
@@ -28,6 +30,7 @@ module JM
         parse_options(args) do |o|
           o.on("--resolution R") { |v| opts[:resolution] = v } if self.class.accepts_resolution
           o.on("--reason R") { |v| opts[:reason] = v } if self.class.accepts_reason
+          o.on("--at WHEN") { |v| opts[:at] = Parse.at(v) } if self.class.accepts_at
           o.on("--by NAME") { |v| opts[:by] = v }
         end
       end
@@ -53,6 +56,7 @@ module JM
 
     class Start < StateChange
       self.target_state = "active"
+      self.accepts_at = true
     end
 
     class Block < StateChange
@@ -63,11 +67,13 @@ module JM
     class Done < StateChange
       self.target_state = "done"
       self.accepts_resolution = true
+      self.accepts_at = true
     end
 
     class Archive < StateChange
       self.target_state = "archived"
       self.accepts_resolution = true
+      self.accepts_at = true
     end
   end
 end

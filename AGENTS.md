@@ -40,6 +40,7 @@ jm log JM-42 --kind finding --stdin < findings.md
 jm ref add JM-42 commit HEAD --repo dommy   # 完全 SHA へ解決される
 jm ref add JM-42 file lib/foo.rb --repo dommy
 jm done JM-42 --resolution completed
+jm done JM-42 --resolution completed --at 2026-01   # 済んだ作業を後から記録(粗い日付可)
 ```
 
 ## 推奨手順

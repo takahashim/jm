@@ -102,6 +102,28 @@ class ItemLifecycleTest < JM::TestCase
     refute_nil done["completed_at"]
   end
 
+  def test_done_at_backdates_completed_at
+    run_cli("add", "already finished")
+    run_cli("done", "1", "--resolution", "completed", "--at", "2026-01")
+    done = json_of("show", "1")
+    assert_equal "done", done["state"]
+    assert_equal "2026-01-01T00:00:00Z", done["completed_at"]
+  end
+
+  def test_done_at_is_idempotent_and_does_not_overwrite
+    run_cli("add", "task")
+    run_cli("done", "1", "--at", "2026-01-20")
+    run_cli("done", "1", "--at", "2020-05-05")
+    assert_equal "2026-01-20T00:00:00Z", json_of("show", "1")["completed_at"]
+  end
+
+  def test_done_at_rejects_invalid_value
+    run_cli("add", "task")
+    code, _out, err = run_cli("done", "1", "--at", "sometime")
+    assert_equal 2, code
+    assert_match(/invalid --at/, err)
+  end
+
   def test_start_is_idempotent_on_started_at
     run_cli("add", "task")
     run_cli("start", "1")
