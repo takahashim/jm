@@ -31,24 +31,36 @@ module JM
                       "(integer or #{PRIORITY_ALIASES.keys.join("/")})"
     end
 
-    # Relative durations ("1d", "2h", "30m", "1w") or an ISO date/time, resolved
-    # to a storage timestamp cutoff for --since (SPEC 14.5).
+    # Relative durations ("1d", "2h", "30m", "1w") or a date/timestamp, resolved
+    # to a storage timestamp cutoff for --since (SPEC 14.5). Coarse dates are
+    # accepted the same way as --at (2026, 2026-01, 2026-01-01).
     def since(value, now: Time.now.utc)
       if (m = value.match(/\A(\d+)([wdhm])\z/))
         n = m[1].to_i
         seconds = { "w" => 604_800, "d" => 86_400, "h" => 3600, "m" => 60 }[m[2]]
         (now - (n * seconds)).strftime(Clock::FORMAT)
       else
-        Time.iso8601(value).utc.strftime(Clock::FORMAT)
+        normalize_timestamp(value)
       end
     rescue ArgumentError
-      raise ArgError, "invalid --since: #{value} (e.g. 1d, 2h, 30m, or a date)"
+      raise ArgError, "invalid --since: #{value} (e.g. 1d, 2h, 30m, or a date like 2026-01-01)"
     end
 
     # A backdated timestamp for --at (SPEC 14.6). Coarse dates are padded to the
     # earliest instant so an unknown day/time still yields a valid, sortable
     # storage stamp: 2026 -> 2026-01-01T00:00:00Z, 2026-01 -> ...-01T00:00:00Z.
     def at(value)
+      normalize_timestamp(value)
+    rescue ArgumentError
+      raise ArgError, "invalid --at: #{value} " \
+                      "(e.g. 2026, 2026-01, 2026-01-20, or a full ISO 8601 timestamp)"
+    end
+
+    # Normalize a date or timestamp string to a storage stamp (UTC, Clock::FORMAT).
+    # Accepts YYYY / YYYY-MM / YYYY-MM-DD (padded to the earliest instant) and any
+    # full ISO 8601 value. Raises ArgumentError on unparseable input; callers wrap
+    # it with a flag-specific message.
+    def normalize_timestamp(value)
       str = value.to_s.strip
       normalized =
         if (m = str.match(/\A(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?\z/))
@@ -57,9 +69,6 @@ module JM
           str
         end
       Time.iso8601(normalized).utc.strftime(Clock::FORMAT)
-    rescue ArgumentError
-      raise ArgError, "invalid --at: #{value} " \
-                      "(e.g. 2026, 2026-01, 2026-01-20, or a full ISO 8601 timestamp)"
     end
   end
 end
