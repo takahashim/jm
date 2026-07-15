@@ -1696,11 +1696,19 @@ Refs: JM-42
 
 `jm`自身はGit hookを必須にしない。
 
-登録済みRepositoryの直近のコミットメッセージから`JM-42`形式のIDを検出し、該当Itemへcommit Reference（完全SHA）を自動付与する。
+登録済みRepositoryの直近のコミットメッセージにある`Refs:`（または`Ref:`）トレーラ行からItem IDを検出し、該当Itemへcommit Reference（完全SHA）を自動付与する。
 
 ```bash
 jm git scan --repo dommy          # 直近 --limit 件（既定100）を走査
 jm git scan --repo dommy --limit 500
+```
+
+検出対象は`Refs:`/`Ref:`で始まる行に限る。本文や例示に現れる`JM-42`は拾わない（偶発的な誤リンクを避けるため。全文走査は将来`--loose`等で足す余地がある）。トレーラ行には複数IDを空白・カンマ区切りで書ける。
+
+```text
+Implement WebSocket message delivery
+
+Refs: JM-42, JM-43
 ```
 
 IDは`JM-42` / `jm-42` / `JM-000042`のいずれの表記も検出する（大文字小文字を無視、ゼロ埋め可）。存在しないIDは無視する。付与は冪等（10.4の一意制約）で、再走査しても重複しない。同一commitで同一Itemを複数回参照しても1件にまとまる。

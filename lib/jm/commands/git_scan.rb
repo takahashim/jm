@@ -9,6 +9,9 @@ module JM
     # Named GitScan rather than Git so a bare `Git` in the Commands namespace
     # still resolves to the JM::Git helper module.
     class GitScan < Command
+      # IDs are read only from a `Refs:`/`Ref:` trailer line (SPEC 24.2), so an
+      # incidental JM-<id> in prose or an example is not linked.
+      TRAILER = /\A[ \t]*refs?:[ \t]*(.+)/i
       ID_PATTERN = /\bJM-0*(\d+)\b/i
       DEFAULT_LIMIT = 100
 
@@ -52,7 +55,13 @@ module JM
       end
 
       def item_ids_in(message)
-        message.to_s.scan(ID_PATTERN).flatten.map { |n| Integer(n, 10) }.uniq
+        numbers = message.to_s.each_line.flat_map { |line| ids_on_line(line) }
+        numbers.map { |n| Integer(n, 10) }.uniq
+      end
+
+      def ids_on_line(line)
+        m = line.match(TRAILER)
+        m ? m[1].scan(ID_PATTERN).flatten : []
       end
 
       def positive_int(value)

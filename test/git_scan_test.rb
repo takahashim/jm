@@ -57,7 +57,7 @@ class GitScanTest < JM::TestCase
 
   def test_scan_is_idempotent
     run_cli("add", "task")
-    commit("work Refs: JM-1")
+    commit("work\n\nRefs: JM-1")
     run_cli("git", "scan", "--repo", "myrepo")
     run_cli("git", "scan", "--repo", "myrepo")
     assert_equal 1, refs_of(1).length
@@ -65,18 +65,26 @@ class GitScanTest < JM::TestCase
 
   def test_scan_ignores_unknown_item_ids
     run_cli("add", "task")
-    commit("mentions JM-999 which does not exist")
+    commit("work\n\nRefs: JM-999")
     _code, out, = run_cli("git", "scan", "--repo", "myrepo")
     assert_empty refs_of(1)
     assert_match(/No new commit references/, out)
   end
 
-  def test_scan_matches_various_id_forms
+  def test_scan_matches_various_id_forms_in_trailer
     run_cli("add", "task") # JM-1
-    commit("lower jm-1 and padded JM-000001 both point here")
+    commit("subject\n\nRefs: jm-1, JM-000001")
     run_cli("git", "scan", "--repo", "myrepo")
-    # Same commit + same item collapses to one reference.
+    # Case-insensitive + zero-padded, same commit + item collapse to one ref.
     assert_equal 1, refs_of(1).length
+  end
+
+  def test_scan_ignores_incidental_mentions_outside_trailer
+    run_cli("add", "task") # JM-1
+    commit("Explain the JM-1 id format in the docs (no Refs trailer)")
+    _code, out, = run_cli("git", "scan", "--repo", "myrepo")
+    assert_empty refs_of(1)
+    assert_match(/No new commit references/, out)
   end
 
   def test_scan_requires_repo
