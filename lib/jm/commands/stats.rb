@@ -7,7 +7,7 @@ module JM
       private
 
       def perform(_args)
-        counts = items.stats
+        counts = queries.stats
         if @output.json?
           @output.json(counts)
         else

@@ -14,46 +14,37 @@ module JM
         id = item_id(rest.shift)
         raise ArgError, "too many arguments" unless rest.empty?
 
-        row = items.get(id)
-        assoc = gather(id)
-        @output.json? ? emit_json(row, assoc) : render_human(row, assoc)
+        detail = queries.show(id)
+        raise NotFound, "no such item: #{PublicId.format(id)}" if detail.nil?
+
+        @output.json? ? emit_json(detail) : render_human(detail)
       end
 
-      def gather(id)
-        entry_rows = entries.for_item(id)
-        {
-          tags: tags.for_item(id),
-          repositories: repos.for_item(id).map { |r| r["name"] },
-          relations: relations.described_for(id).map { |e| relation_view(e) },
-          references: refs.list(id),
-          entries: @all ? entry_rows : entry_rows.last(RECENT_ENTRIES),
-          entry_total: entry_rows.length
-        }
+      # The most recent entries, or all of them under --all.
+      def visible_entries(all_entries)
+        @all ? all_entries : all_entries.last(RECENT_ENTRIES)
       end
 
-      def relation_view(edge)
-        { "relation" => edge["relation"], "id" => PublicId.format(edge["other_id"]),
-          "title" => items.get(edge["other_id"])["title"] }
-      end
-
-      def emit_json(row, assoc)
-        data = ItemView.new(row).to_h.merge(
-          "tags" => assoc[:tags],
-          "repositories" => assoc[:repositories],
-          "relations" => assoc[:relations],
-          "references" => assoc[:references].map { |r| reference_hash(r) },
-          "entries" => assoc[:entries].map { |e| entry_hash(e) }
+      def emit_json(detail)
+        data = ItemView.new(detail["item"]).to_h.merge(
+          "tags" => detail["tags"],
+          "repositories" => detail["repositories"],
+          "relations" => detail["relations"],
+          "references" => detail["references"].map { |r| reference_hash(r) },
+          "entries" => visible_entries(detail["entries"]).map { |e| entry_hash(e) }
         )
         @output.json(data)
       end
 
-      def render_human(row, assoc)
-        ItemView.new(row).render(@output)
-        section("tags", assoc[:tags].join(", ")) unless assoc[:tags].empty?
-        section("repositories", assoc[:repositories].join(", ")) unless assoc[:repositories].empty?
-        render_relations(assoc[:relations])
-        render_references(assoc[:references])
-        render_entries(assoc[:entries], assoc[:entry_total])
+      def render_human(detail)
+        ItemView.new(detail["item"]).render(@output)
+        section("tags", detail["tags"].join(", ")) unless detail["tags"].empty?
+        unless detail["repositories"].empty?
+          section("repositories", detail["repositories"].join(", "))
+        end
+        render_relations(detail["relations"])
+        render_references(detail["references"])
+        render_entries(visible_entries(detail["entries"]), detail["entries"].length)
       end
 
       def render_relations(relations)
@@ -70,7 +61,8 @@ module JM
         @output.line("")
         @output.line("references:")
         references.each do |r|
-          repo = r["repository_id"] ? " @#{repos.get(r["repository_id"])["name"]}" : ""
+          name = queries.reference_repo_name(r)
+          repo = name ? " @#{name}" : ""
           @output.line("  ##{r["id"]} #{r["kind"]} #{r["value"]}#{repo}")
         end
       end
@@ -95,7 +87,8 @@ module JM
 
       def reference_hash(row)
         h = row.reject { |k, _| k.is_a?(Integer) }
-        h["repository"] = repos.get(row["repository_id"])["name"] if row["repository_id"]
+        name = queries.reference_repo_name(row)
+        h["repository"] = name if name
         h
       end
 

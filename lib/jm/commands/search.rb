@@ -13,7 +13,7 @@ module JM
         query = rest.join(" ").strip
         raise ArgError, "usage: jm search QUERY [filters]" if query.empty?
 
-        rows = search.run(
+        rows = queries.search(
           query, type: opts[:type], states: opts[:state] && [opts[:state]],
                  tag: opts[:tag], repo: opts[:repo]
         )
@@ -27,10 +27,6 @@ module JM
           o.on("--tag TAG") { |v| opts[:tag] = v }
           o.on("--repo NAME") { |v| opts[:repo] = v }
         end
-      end
-
-      def search
-        @search ||= Store::Search.new(db)
       end
 
       def emit(rows)

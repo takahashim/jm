@@ -11,7 +11,7 @@ module JM
         opts = {}
         parse(args, opts)
 
-        rows = items.list(
+        rows = queries.list(
           states: resolve_states(opts),
           type: opts[:type],
           author: opts[:by],
@@ -58,10 +58,7 @@ module JM
         elsif rows.empty?
           @output.line("(no items)")
         else
-          rows.each do |r|
-            names = repos.for_item(r["id"]).map { |x| x["name"] }
-            @output.line(ItemView.new(r).summary_line(repos: names))
-          end
+          rows.each { |r| @output.line(ItemView.new(r).summary_line(repos: r["repositories"])) }
         end
       end
     end

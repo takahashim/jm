@@ -50,6 +50,11 @@ module JM
       @refs ||= Store::References.new(db)
     end
 
+    # Shared read-model for list/show/search/stats (PLAN 2).
+    def queries
+      @queries ||= Queries.new(db)
+    end
+
     def author(by_option = nil)
       Author.resolve(@env, by_option)
     end
