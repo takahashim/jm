@@ -133,8 +133,9 @@ jm done 1 --resolution accepted
 ### TUI ビューア
 
 `jm tui` は Item を端末で閲覧する**読み取り専用**の対話ビューア(一覧 → 詳細)。
-キー操作: `j/k` 移動、`l`/Enter で詳細、`h`/Esc で戻る、`g/G` 先頭/末尾、`r` 再読込、`q` 終了。
-編集は CLI で行う。対話モードなので TTY が必要(非 TTY では終了コード 2)。
+キー操作: 一覧は `j/k` 移動・`l`/Enter で詳細・`g/G` 先頭/末尾・`r` 再読込。
+詳細は `j/k` スクロール・`J/K` で前後の Item へ移動・`h`/Esc で戻る。
+`?` でヘルプ、`q`/Ctrl-C で終了。編集は CLI で行う。対話モードなので TTY が必要(非 TTY では終了コード 2)。
 
 オプション依存 [tui_tui](https://github.com/takahashim/tui_tui) が必要(`jm tui` 実行時のみ)。
 未導入なら案内が出る。CLI・TUI・(将来の Web ビューア)は共有の read-model `JM::Queries` を

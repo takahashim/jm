@@ -14,6 +14,26 @@ module JM
       DIM = TuiTui::Style.new(attrs: [:dim])
       SELECTED = TuiTui::Style.new(attrs: [:reverse])
 
+      HELP = [
+        ["jm tui — keys", :header],
+        ["", nil],
+        ["  list", :header],
+        ["    j / k        move", nil],
+        ["    l / Enter    open detail", nil],
+        ["    g / G        top / bottom", nil],
+        ["    r            reload", nil],
+        ["", nil],
+        ["  detail", :header],
+        ["    j / k        scroll", nil],
+        ["    J / K        previous / next item", nil],
+        ["    h / Esc      back to list", nil],
+        ["    g / G        top / bottom", nil],
+        ["", nil],
+        ["  any screen", :header],
+        ["    ?            toggle this help", nil],
+        ["    q / Ctrl-C   quit", nil]
+      ].freeze
+
       def self.run(queries)
         TuiTui::Runtime.new(new(queries)).run
       end
@@ -31,16 +51,47 @@ module JM
       def update(event)
         case event
         in TuiTui::KeyEvent(key: "q" | TuiTui::KeyCode::CTRL_C) then :quit
-        else
-          @screen == :list ? update_list(event) : update_detail(event)
+        in TuiTui::KeyEvent(key: "?") then toggle_help
+        else dispatch(event)
         end
       end
 
       def view(size)
-        @screen == :list ? render_list(size) : render_detail(size)
+        case @screen
+        when :help then render_help(size)
+        when :detail then render_detail(size)
+        else render_list(size)
+        end
       end
 
       private
+
+      def dispatch(event)
+        case @screen
+        when :help then update_help(event)
+        when :detail then update_detail(event)
+        else update_list(event)
+        end
+      end
+
+      # `?` opens the help overlay from anywhere and closes it back to where it
+      # was opened.
+      def toggle_help
+        if @screen == :help
+          @screen = @return_screen
+        else
+          @return_screen = @screen
+          @screen = :help
+        end
+        self
+      end
+
+      def update_help(event)
+        case event
+        in TuiTui::KeyEvent(key: TuiTui::KeyCode::ESCAPE | "h" | :left) then toggle_help
+        else self
+        end
+      end
 
       # --- list screen ---
 
@@ -64,10 +115,15 @@ module JM
       def open
         return self if @items.empty?
 
+        @screen = :detail
+        load_detail
+      end
+
+      # (Re)load the detail for the currently selected item.
+      def load_detail
         @detail = @queries.show(@items[@sel]["id"])
         @detail_lines = nil
         @scroll = 0
-        @screen = :detail
         self
       end
 
@@ -89,7 +145,7 @@ module JM
             canvas.text(2 + i, 1, list_line(row), style)
           end
         end
-        canvas.text(size.rows, 1, "j/k move  l/Enter open  g/G top/bottom  r reload  q quit", DIM)
+        canvas.text(size.rows, 1, "j/k move  l/Enter open  g/G ends  r reload  ? help  q quit", DIM)
         canvas
       end
 
@@ -108,10 +164,23 @@ module JM
           self
         in TuiTui::KeyEvent(key: "j" | :down) then scroll_to(@scroll + 1)
         in TuiTui::KeyEvent(key: "k" | :up) then scroll_to(@scroll - 1)
+        in TuiTui::KeyEvent(key: "J") then detail_move(1)
+        in TuiTui::KeyEvent(key: "K") then detail_move(-1)
         in TuiTui::KeyEvent(key: "g") then scroll_to(0)
         in TuiTui::KeyEvent(key: "G") then scroll_to(detail_lines.length)
         else self
         end
+      end
+
+      # Move to the previous/next item while staying on the detail screen.
+      def detail_move(delta)
+        return self if @items.empty?
+
+        target = (@sel + delta).clamp(0, @items.length - 1)
+        return self if target == @sel
+
+        @sel = target
+        load_detail
       end
 
       def scroll_to(value)
@@ -126,7 +195,16 @@ module JM
         detail_lines[@scroll, body_rows].to_a.each_with_index do |(text, style), i|
           canvas.text(1 + i, 1, text, style)
         end
-        canvas.text(size.rows, 1, "j/k scroll  h/Esc back  q quit", DIM)
+        canvas.text(size.rows, 1, "j/k scroll  J/K prev/next  h/Esc back  ? help  q quit", DIM)
+        canvas
+      end
+
+      def render_help(size)
+        canvas = TuiTui::Canvas.blank(size)
+        HELP.first((size.rows - 1).clamp(0, HELP.length)).each_with_index do |(text, role), i|
+          canvas.text(1 + i, 1, text, role == :header ? HEADER : nil)
+        end
+        canvas.text(size.rows, 1, "? or Esc to close", DIM)
         canvas
       end
 

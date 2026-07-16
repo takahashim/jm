@@ -56,6 +56,28 @@ class TuiAppTest < JM::TestCase
     assert_match(/r reload/, rendered(app)) # list footer again
   end
 
+  def test_detail_shift_jk_moves_between_items
+    order = JM::Queries.new(@db).list(states: nil).map { |r| r["id"] }
+    skip "need >= 2 items" if order.length < 2
+
+    @app.update(key("l")) # open the first item's detail
+    @app.update(key("J")) # next item
+    assert_match(/#{JM::PublicId.format(order[1])}/, rendered(@app))
+
+    @app.update(key("K")) # back to previous
+    assert_match(/#{JM::PublicId.format(order[0])}/, rendered(@app))
+  end
+
+  def test_help_toggles
+    @app.update(key("?"))
+    text = rendered(@app)
+    assert_match(/jm tui .* keys/, text)
+    assert_match(%r{previous / next item}, text)
+
+    @app.update(key("?")) # close, back to the list
+    assert_match(/r reload/, rendered(@app))
+  end
+
   def test_q_quits
     assert_equal :quit, @app.update(key("q"))
   end
