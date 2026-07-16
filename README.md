@@ -128,6 +128,17 @@ jm done 1 --resolution accepted
 | `jm search QUERY [--type/--state/--tag/--repo]` | title/body/Entry を全文検索。引数をクォートするとフレーズ検索 |
 | `jm next [--repo NAME] [--start]` | 着手可能な Item を1件(優先度高→古い順)。`--start` で active 化 |
 | `jm stats` | state 別カウントと ready 数 |
+| `jm tui` | 端末で Item を閲覧する読み取り専用ビューア(下記) |
+
+### TUI ビューア
+
+`jm tui` は Item を端末で閲覧する**読み取り専用**の対話ビューア(一覧 → 詳細)。
+キー操作: `j/k` 移動、`l`/Enter で詳細、`h`/Esc で戻る、`g/G` 先頭/末尾、`r` 再読込、`q` 終了。
+編集は CLI で行う。対話モードなので TTY が必要(非 TTY では終了コード 2)。
+
+オプション依存 [tui_tui](https://github.com/takahashim/tui_tui) が必要(`jm tui` 実行時のみ)。
+未導入なら案内が出る。CLI・TUI・(将来の Web ビューア)は共有の read-model `JM::Queries` を
+参照するため、同じデータを別のガワで見る形になる。
 
 ### 保守
 
