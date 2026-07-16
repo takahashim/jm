@@ -23,20 +23,21 @@
 
 Ruby 3.2 以降と `git` が必要。
 
+[GitHub Releases](https://github.com/takahashim/jm/releases) から最新の `.gem` を入れる
+(RubyGems.org へは公開していない)。
+
+```bash
+gem install https://github.com/takahashim/jm/releases/download/v0.0.1/jm-0.0.1.gem
+jm init
+```
+
 開発版を使う場合は、リポジトリを clone して Bundler 経由で実行する。
 
 ```bash
-git clone <this-repo> ~/src/jm
+git clone https://github.com/takahashim/jm.git ~/src/jm
 cd ~/src/jm
 bundle install
 bundle exec jm init
-```
-
-RubyGems への公開後は `gem install jm` でインストールできる。
-
-```bash
-gem install jm
-jm init
 ```
 
 ## クイックスタート
