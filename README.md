@@ -23,13 +23,18 @@
 
 Ruby 3.2 以降と `git` が必要。
 
-[GitHub Releases](https://github.com/takahashim/jm/releases) から最新の `.gem` を入れる
-(RubyGems.org へは公開していない)。
+[GitHub Releases](https://github.com/takahashim/jm/releases) から最新の `.gem` をダウンロード
+して入れる(RubyGems.org へは公開していない)。
 
 ```bash
-gem install https://github.com/takahashim/jm/releases/download/v0.0.1/jm-0.0.1.gem
+curl -sL https://github.com/takahashim/jm/releases/download/v0.0.1/jm-0.0.1.gem -o jm.gem
+gem install jm.gem
 jm init
 ```
+
+> 多くの RubyGems では `gem install <上記 URL>` の一行でも入る。ただし一部の RubyGems
+> (例: 4.0.x)は URL 直指定時の依存解決で失敗するため、上のダウンロード→ローカル
+> インストールが確実。
 
 開発版を使う場合は、リポジトリを clone して Bundler 経由で実行する。
 
