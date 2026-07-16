@@ -20,6 +20,7 @@ module JM
         ["  list", :header],
         ["    j / k        move", nil],
         ["    l / Enter    open detail", nil],
+        ["    p / P        cycle project filter", nil],
         ["    g / G        top / bottom", nil],
         ["    r            reload", nil],
         ["", nil],
@@ -40,12 +41,14 @@ module JM
 
       def initialize(queries)
         @queries = queries
-        @items = queries.list(states: nil)
+        @repo_filters = [nil, *queries.repositories] # nil = all projects
+        @filter_idx = 0
         @sel = 0
         @scroll = 0
         @screen = :list
         @detail = nil
         @detail_lines = nil
+        refresh_items
       end
 
       def update(event)
@@ -95,6 +98,7 @@ module JM
 
       # --- list screen ---
 
+      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def update_list(event)
         case event
         in TuiTui::KeyEvent(key: "j" | :down) then select(@sel + 1)
@@ -102,9 +106,27 @@ module JM
         in TuiTui::KeyEvent(key: "g") then select(0)
         in TuiTui::KeyEvent(key: "G") then select(@items.length - 1)
         in TuiTui::KeyEvent(key: "l" | :right | "\r" | "\n") then open
+        in TuiTui::KeyEvent(key: "p") then cycle_repo(1)
+        in TuiTui::KeyEvent(key: "P") then cycle_repo(-1)
         in TuiTui::KeyEvent(key: "r") then reload
         else self
         end
+      end
+      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+
+      # Cycle the project (repository) filter, including an "all" position.
+      def cycle_repo(delta)
+        return self if @repo_filters.length <= 1
+
+        @filter_idx = (@filter_idx + delta) % @repo_filters.length
+        @sel = 0
+        @scroll = 0
+        refresh_items
+        self
+      end
+
+      def refresh_items
+        @items = @queries.list(states: nil, repo: @repo_filters[@filter_idx])
       end
 
       def select(index)
@@ -128,13 +150,14 @@ module JM
       end
 
       def reload
-        @items = @queries.list(states: nil)
+        refresh_items
         select(@sel)
       end
 
       def render_list(size)
         canvas = TuiTui::Canvas.blank(size)
-        canvas.text(1, 1, "jm  (#{@items.length} items)", HEADER)
+        project = @repo_filters[@filter_idx] || "all"
+        canvas.text(1, 1, "jm  (#{@items.length} items)  project: #{project}", HEADER)
         body_rows = [size.rows - 2, 0].max
         @scroll = window_top(@scroll, @sel, body_rows)
         if @items.empty?
@@ -145,7 +168,8 @@ module JM
             canvas.text(2 + i, 1, list_line(row), style)
           end
         end
-        canvas.text(size.rows, 1, "j/k move  l/Enter open  g/G ends  r reload  ? help  q quit", DIM)
+        canvas.text(size.rows, 1,
+                    "j/k move  l/Enter open  p/P project  g/G ends  r reload  ? help  q quit", DIM)
         canvas
       end
 

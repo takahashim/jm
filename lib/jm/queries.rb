@@ -34,6 +34,11 @@ module JM
       @items.stats
     end
 
+    # Registered repository names (for filtering by project).
+    def repositories
+      @repos.list.map { |r| r["name"] }
+    end
+
     # Full detail for one item, or nil when it does not exist. Entries are
     # returned in full; a frontend decides how many to show.
     def show(id)

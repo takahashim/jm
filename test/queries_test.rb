@@ -59,6 +59,13 @@ class QueriesTest < JM::TestCase
     assert_empty q.search("haystack")
   end
 
+  def test_repositories_lists_names
+    repo = File.join(@tmpdir, "r")
+    FileUtils.mkdir_p(repo)
+    run_cli("repo", "add", "myrepo", repo)
+    assert_equal ["myrepo"], q.repositories
+  end
+
   def test_stats_counts_states
     run_cli("add", "a")
     run_cli("add", "b")

@@ -78,6 +78,24 @@ class TuiAppTest < JM::TestCase
     assert_match(/r reload/, rendered(@app))
   end
 
+  def test_project_filter_cycles
+    repo = File.join(@tmpdir, "proj")
+    FileUtils.mkdir_p(repo)
+    run_cli("repo", "add", "myproj", repo)
+    run_cli("repo", "link", "1", "myproj") # link one of the two items
+
+    app = JM::TUI::App.new(JM::Queries.new(@db)) # rebuild to see the new repo
+    assert_match(/project: all/, rendered(app))
+    assert_match(/\(2 items\)/, rendered(app))
+
+    app.update(key("p"))
+    assert_match(/project: myproj/, rendered(app))
+    assert_match(/\(1 items\)/, rendered(app))
+
+    app.update(key("p")) # only one repo, so cycles back to all
+    assert_match(/project: all/, rendered(app))
+  end
+
   def test_q_quits
     assert_equal :quit, @app.update(key("q"))
   end
