@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+      - name: Verify tag matches gem version
+        run: |
+          v="v$(ruby -Ilib -e 'require "jm/version"; print JM::VERSION')"
+          if [ "$v" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME does not match gem version $v"
+            exit 1
+          fi
+      - name: Build gem
+        run: gem build jm.gemspec
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" jm-*.gem --title "$GITHUB_REF_NAME" --generate-notes
